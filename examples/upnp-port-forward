@@ -1,0 +1,107 @@
+#!/usr/bin/env lua
+--[[
+--
+-- upnp_port_forward example usage of uPnPclient library
+--
+-- Author: Karl Bunch <karlbunch@karlbunch.com>
+--
+-- Created: Sun Mar 20 08:34:16 EDT 2016
+--
+]]
+
+-- Simple hack allow testing from the examples/.. directory w/o installing
+if io.open("../lua/uPnPclient.lua") then
+    package.path = '../lua/?.lua;' .. package.path
+end
+
+local uPnPclient = assert(require('uPnPclient'))
+
+function main(...)
+    local args = { ... }
+    local cmds = { ['-a'] = { }, ['-d'] = { } }
+    local debug = 0
+
+    while #args > 0 do
+	local opt = table.remove(args, 1)
+
+	if opt == '-a' or opt == '-d' then
+	    -- protocol, internal_port, external_port, description, duration
+	    -- where external, description and duration are optional
+	    local cmd = { }
+	    for i=1,4 do
+		local arg = table.remove(args, 1)
+		if arg == nil then
+		    break
+		end
+		if type(arg) == 'string' and arg:sub(1,1) == '-' then
+		    table.insert(args, 1, arg)
+		    break
+		end
+		cmd[#cmd+1] = arg
+	    end
+
+	    if #cmd >= 2 then
+		table.insert(cmds[opt], cmd)
+	    end
+	elseif opt == '-x' then
+	    debug = tonumber(table.remove(args, 1))
+	else
+	    return usage("Invalid argument[" .. opt .. "]")
+	end
+    end
+
+    if #cmds['-a'] <= 0 and #cmds['-d'] <= 0 then
+	return usage("No commands found")
+    end
+
+    -- Get client object
+    local u = uPnPclient:new{ debug_level = debug }
+
+    -- Find the InternetGatewayDevice
+    local ret, err = u:discoverIGD()
+
+    if err then
+	print("FAILED: " .. err)
+	return 1
+    end
+
+    local ext_ip = assert(u:GetExternalIPAddress())
+
+    print("External IP: ", ext_ip)
+
+    for _,map in pairs(cmds['-d']) do
+	io.stdout:write("Delete port forward: " .. table.concat(map, '/'))
+
+	local ok, err =  u:DeletePortMapping(unpack(map))
+	
+	if ok then
+	    io.stdout:write(": SUCCESS\n")
+	elseif err then
+	    io.stdout:write(": FAILURE: " .. err .. "\n")
+	end
+    end
+
+    for _,map in pairs(cmds['-a']) do
+	io.stdout:write("Add port forward: " .. table.concat(map, '/'))
+
+	local ok, err = u:AddPortMapping(unpack(map))
+        if ok then
+	    io.stdout:write(": SUCCESS\n")
+	elseif err then
+	    io.stdout:write(": FAILURE: " .. err .. "\n")
+	end
+    end
+
+    return 0
+end
+
+function usage(msg)
+    print(msg, "\nUsage: ", arg[0],
+        "[ -x debugLevel(0-9) ]",
+	"[ -a externalPort internalPort { description {duration} } ]...",
+	"[ -d externalPort internalPort ]...\n"
+    )
+    return 1
+end
+
+os.exit(main(unpack({ ... })))
