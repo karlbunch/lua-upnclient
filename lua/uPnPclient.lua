@@ -23,7 +23,9 @@ local type = type
 module(...)
 
 local uPnPclient = { }
-local _M = { }
+local _M = {
+    VERSION = "v0.2"
+}
 
 function _M.new(self, init)
     if type(init) == "table" then
