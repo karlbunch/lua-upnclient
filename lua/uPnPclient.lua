@@ -9,18 +9,6 @@ local socket = require('socket')
 local http = require('httpclient').new()
 local urlparser = require('httpclient.neturl')
 local inspect = require("inspect")
-local assert = assert
-local ipairs = ipairs
-local pairs = pairs
-local print = print
-local setmetatable = setmetatable
-local string = string
-local table = table
-local tostring = tostring
-local tonumber = tonumber
-local type = type
-
-module(...)
 
 local uPnPclient = { }
 local _M = {
