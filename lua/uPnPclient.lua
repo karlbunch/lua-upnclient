@@ -12,7 +12,7 @@ local inspect = require("inspect")
 
 local uPnPclient = { }
 local _M = {
-    VERSION = "v0.2"
+    VERSION = "v0.3"
 }
 
 function _M.new(self, init)

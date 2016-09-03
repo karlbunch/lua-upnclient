@@ -1,8 +1,8 @@
 package = "uPnPclient"
-version = "0.2-1"
+version = "0.3-1"
 source = {
     url = "git://github.com/karlbunch/lua-upnclient",
-    tag = "v0.2"
+    tag = "v0.3"
 }
 description = {
     summary = "Lua uPnP client for discovering uPnP routers and other devices and setting up port forwarding",
